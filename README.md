@@ -18,9 +18,9 @@
 
 ## <img src="https://ai-studio-static-online.cdn.bcebos.com/b2837137c7284d32aa46319017cadea0cf5ce8a8a1004163b45d73916ceab1a6" width=5% /> 资源获取
 
-* 推荐您使用**Jupyter Notebook**来本地运行本书的代码．[代码下载以及使用方法都可以参考本书对应的GitHub项目](https://github.com/nndl/practice-in-paddle)。
+* 推荐您使用Jupyter Notebook来本地运行本书的代码，[代码下载以及使用方法都可以参考本书对应的GitHub项目](https://github.com/nndl/practice-in-paddle)。
 
-* 您也可以登录**[飞桨AI Studio实训平台](https://aistudio.baidu.com/aistudio/index)**在线运行本书代码，并获取相应的视频课程。视频课程链接如下：
+* 您也可以登录[飞桨AI Studio实训平台](https://aistudio.baidu.com/aistudio/index)在线运行本书代码，并获取相应的视频课程。视频课程链接如下：
 
 1）**《神经网络与深度学习》视频课程（邱锡鹏老师主讲）**：https://aistudio.baidu.com/aistudio/education/group/info/25876
 
