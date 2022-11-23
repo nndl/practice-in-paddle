@@ -1,6 +1,6 @@
 # 《神经网络与深度学习：案例与实践》  <br> Neural Networks and Deep Learning in Practice </br>
 
-<table><tr><td bgcolor=PowderBlue>“我不能创造的东西，我就不理解（What I cannot create, I do not understand）。” 这是诺贝尔物理奖获得者理查德·费恩曼（Richard Feynman）在他办公室黑板上留下的一句话。深度学习的学习中也是如此，只有通过实践才能更深入地理解理论。<p align="right">  — 邱锡鹏 <p/></td></tr></table>
+“我不能创造的东西，我就不理解（What I cannot create, I do not understand）。” 这是诺贝尔物理奖获得者理查德·费恩曼（Richard Feynman）在他办公室黑板上留下的一句话。深度学习的学习中也是如此，只有通过实践才能更深入地理解理论。
 
 ## <img src="https://ai-studio-static-online.cdn.bcebos.com/b2837137c7284d32aa46319017cadea0cf5ce8a8a1004163b45d73916ceab1a6" width=5% /> 内容介绍
 
