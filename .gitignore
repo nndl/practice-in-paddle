@@ -17,3 +17,12 @@ _tmp_*.pdparams
 # IDE
 .vscode/
 .idea/
+
+# Downloaded datasets (run `python dataset/download.py` to fetch)
+dataset/*.tar.gz
+dataset/_*_extract/
+dataset/boston_house_prices.csv
+chap5卷积神经网络/datasets/
+chap6循环神经网络/dataset/
+chap8注意力机制/dataset/
+chap8注意力机制/lcqmc/
