@@ -2,12 +2,11 @@
 
 每次运行会跳过已存在的文件（按目标路径判断），可以反复运行。
 
-数据放置位置（与 notebook 中的相对路径一致）：
-  dataset/boston_house_prices.csv                  — chap2
-  chap5卷积神经网络/datasets/cifar-10-batches-py/  — chap5
-  chap6循环神经网络/dataset/{train,dev,test,vocab}.txt — chap6 IMDB
-  chap8注意力机制/dataset/{train,dev,test,vocab}.txt    — chap8 IMDB
-  chap8注意力机制/lcqmc/{train,dev,test}.txt        — chap8 LCQMC
+所有数据放在仓库根目录的 dataset/ 下，各章节 notebook 用相对路径 ../dataset/... 访问：
+  dataset/boston_house_prices.csv      — chap2
+  dataset/cifar-10-batches-py/         — chap5
+  dataset/imdb/{train,dev,test,vocab}.txt  — chap6 / chap8（共享）
+  dataset/lcqmc/{train,dev,test}.txt   — chap8
 
 MNIST 不在此处下载——`paddle.vision.datasets.MNIST(download=True)` 会自动下载。
 Iris 通过 `sklearn.datasets.load_iris()` 直接取，无需下载。
@@ -29,10 +28,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATASET_ROOT = ROOT / "dataset"
-CHAP5_DIR = ROOT / "chap5卷积神经网络" / "datasets"
-CHAP6_DIR = ROOT / "chap6循环神经网络" / "dataset"
-CHAP8_IMDB_DIR = ROOT / "chap8注意力机制" / "dataset"
-CHAP8_LCQMC_DIR = ROOT / "chap8注意力机制" / "lcqmc"
+CIFAR_DIR = DATASET_ROOT  # cifar-10-batches-py/ ends up directly under dataset/
+IMDB_DIR = DATASET_ROOT / "imdb"
+LCQMC_DIR = DATASET_ROOT / "lcqmc"
 
 SOURCES = {
     "boston": "https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv",
@@ -79,25 +77,24 @@ def fetch_boston():
 
 # ----------------- CIFAR-10 -----------------
 def fetch_cifar10():
-    target_dir = CHAP5_DIR / "cifar-10-batches-py"
+    target_dir = CIFAR_DIR / "cifar-10-batches-py"
     if target_dir.exists() and any(target_dir.iterdir()):
         log(f"skip (exists): {target_dir.relative_to(ROOT)}")
         return
     tar_path = DATASET_ROOT / "cifar-10-python.tar.gz"
     _download(SOURCES["cifar10"], tar_path)
-    log(f"extracting CIFAR-10 -> {CHAP5_DIR.relative_to(ROOT)}")
-    CHAP5_DIR.mkdir(parents=True, exist_ok=True)
+    log(f"extracting CIFAR-10 -> {CIFAR_DIR.relative_to(ROOT)}")
+    CIFAR_DIR.mkdir(parents=True, exist_ok=True)
     with tarfile.open(tar_path, "r:gz") as tf:
-        tf.extractall(CHAP5_DIR)
+        tf.extractall(CIFAR_DIR)
     log("CIFAR-10 ready")
 
 
 # ----------------- IMDB -----------------
 def fetch_imdb():
     # Already processed?
-    chap6_train = CHAP6_DIR / "train.txt"
-    if chap6_train.exists():
-        log(f"skip (exists): {chap6_train.relative_to(ROOT)}")
+    if (IMDB_DIR / "train.txt").exists():
+        log(f"skip (exists): {(IMDB_DIR / 'train.txt').relative_to(ROOT)}")
         return
 
     tar_path = DATASET_ROOT / "aclImdb_v1.tar.gz"
@@ -147,15 +144,15 @@ def fetch_imdb():
         counter.update(text.split(" "))
     vocab_tokens = ["[PAD]", "[UNK]"] + [w for w, _ in counter.most_common(50000) if w]
 
-    for target_dir in [CHAP6_DIR, CHAP8_IMDB_DIR]:
-        write_split(train_items, target_dir / "train.txt")
-        write_split(dev_items, target_dir / "dev.txt")
-        write_split(test_items, target_dir / "test.txt")
-        vocab_path = target_dir / "vocab.txt"
-        with vocab_path.open("w", encoding="utf-8") as fw:
-            for tok in vocab_tokens:
-                fw.write(tok + "\n")
-        log(f"  written: {target_dir.relative_to(ROOT)} (train/dev/test/vocab)")
+    write_split(train_items, IMDB_DIR / "train.txt")
+    write_split(dev_items, IMDB_DIR / "dev.txt")
+    write_split(test_items, IMDB_DIR / "test.txt")
+    vocab_path = IMDB_DIR / "vocab.txt"
+    vocab_path.parent.mkdir(parents=True, exist_ok=True)
+    with vocab_path.open("w", encoding="utf-8") as fw:
+        for tok in vocab_tokens:
+            fw.write(tok + "\n")
+    log(f"  written: {IMDB_DIR.relative_to(ROOT)} (train/dev/test/vocab)")
 
     # Clean up extracted folder to save disk; keep tar in case user wants to re-process
     log("cleaning up extracted aclImdb (keeping the tar.gz)...")
@@ -165,7 +162,7 @@ def fetch_imdb():
 
 # ----------------- LCQMC -----------------
 def fetch_lcqmc():
-    target_dir = CHAP8_LCQMC_DIR
+    target_dir = LCQMC_DIR
     train_path = target_dir / "train.txt"
     if train_path.exists():
         log(f"skip (exists): {train_path.relative_to(ROOT)}")

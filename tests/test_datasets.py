@@ -20,15 +20,15 @@ def main():
 
     def t_cifar10():
         import pickle
-        cifar_dir = ROOT / "chap5卷积神经网络" / "datasets" / "cifar-10-batches-py"
+        cifar_dir = ROOT / "dataset" / "cifar-10-batches-py"
         with (cifar_dir / "data_batch_1").open("rb") as fr:
             d = pickle.load(fr, encoding="latin1")
         assert "data" in d and "labels" in d
         assert d["data"].shape == (10000, 3072)
         assert len(d["labels"]) == 10000
 
-    def t_imdb(chap_dir):
-        ds_dir = ROOT / chap_dir / "dataset"
+    def t_imdb():
+        ds_dir = ROOT / "dataset" / "imdb"
         train = (ds_dir / "train.txt").read_text(encoding="utf-8").splitlines()
         dev = (ds_dir / "dev.txt").read_text(encoding="utf-8").splitlines()
         test = (ds_dir / "test.txt").read_text(encoding="utf-8").splitlines()
@@ -43,8 +43,8 @@ def main():
         assert label in ("0", "1")
         assert len(text) > 0
 
-    def t_imdb_loader_chap6():
-        # Mimic chap6 notebook's load_imdb_data
+    def t_imdb_loader():
+        # Mimic chap6/8 notebook's load_imdb_data
         def load_imdb_data(path):
             sets = {}
             for split in ("train", "dev", "test"):
@@ -56,7 +56,7 @@ def main():
                 sets[split] = examples
             return sets["train"], sets["dev"], sets["test"]
         train_data, dev_data, test_data = load_imdb_data(
-            str(ROOT / "chap6循环神经网络" / "dataset"))
+            str(ROOT / "dataset" / "imdb"))
         assert len(train_data) == 20000
         text, label = train_data[0]
         assert label in ("0", "1")
@@ -69,7 +69,7 @@ def main():
                 for i, line in enumerate(fr):
                     d[line.strip()] = i
             return d
-        word2id = load_vocab(str(ROOT / "chap6循环神经网络" / "dataset" / "vocab.txt"))
+        word2id = load_vocab(str(ROOT / "dataset" / "imdb" / "vocab.txt"))
         assert "[PAD]" in word2id and word2id["[PAD]"] == 0
         assert "[UNK]" in word2id and word2id["[UNK]"] == 1
         # Some common words should be in the top of vocab
@@ -77,7 +77,7 @@ def main():
             assert w in word2id, f"common word '{w}' missing from vocab"
 
     def t_lcqmc():
-        ld = ROOT / "chap8注意力机制" / "lcqmc"
+        ld = ROOT / "dataset" / "lcqmc"
         train = (ld / "train.txt").read_text(encoding="utf-8").splitlines()
         assert len(train) > 200000, f"train: {len(train)}"
         # format: text_a\ttext_b\tlabel
@@ -97,7 +97,7 @@ def main():
                     d[line.strip()] = i
             return d
 
-        ds_dir = ROOT / "chap6循环神经网络" / "dataset"
+        ds_dir = ROOT / "dataset" / "imdb"
         word2id = load_vocab(str(ds_dir / "vocab.txt"))
 
         class IMDBDataset(Dataset):
@@ -126,9 +126,8 @@ def main():
 
     r.run("boston_house_prices.csv (506 rows × 14 cols)", t_boston)
     r.run("CIFAR-10 batch unpickle (10000 × 3072)", t_cifar10)
-    r.run("IMDB chap6 files + format", lambda: t_imdb("chap6循环神经网络"))
-    r.run("IMDB chap8 files + format", lambda: t_imdb("chap8注意力机制"))
-    r.run("IMDB chap6 load_imdb_data() shape", t_imdb_loader_chap6)
+    r.run("IMDB files + format", t_imdb)
+    r.run("IMDB load_imdb_data() shape", t_imdb_loader)
     r.run("IMDB vocab.txt loadable as word2id", t_load_vocab)
     r.run("LCQMC train.txt format (text_a\\ttext_b\\tlabel)", t_lcqmc)
     r.run("IMDB → paddle.io.DataLoader full path", t_imdb_dataset_paddle)

@@ -22,7 +22,6 @@ _tmp_*.pdparams
 dataset/*.tar.gz
 dataset/_*_extract/
 dataset/boston_house_prices.csv
-chap5卷积神经网络/datasets/
-chap6循环神经网络/dataset/
-chap8注意力机制/dataset/
-chap8注意力机制/lcqmc/
+dataset/cifar-10-batches-py/
+dataset/imdb/
+dataset/lcqmc/
