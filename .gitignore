@@ -18,6 +18,10 @@ _tmp_*.pdparams
 .vscode/
 .idea/
 
+# macOS / Windows metadata
+.DS_Store
+Thumbs.db
+
 # Downloaded datasets (run `python dataset/download.py` to fetch)
 dataset/*.tar.gz
 dataset/_*_extract/
