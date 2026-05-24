@@ -28,28 +28,32 @@ def main():
         assert len(d["labels"]) == 10000
 
     def t_imdb():
+        import gzip
         ds_dir = ROOT / "dataset" / "imdb"
-        train = (ds_dir / "train.txt").read_text(encoding="utf-8").splitlines()
-        dev = (ds_dir / "dev.txt").read_text(encoding="utf-8").splitlines()
-        test = (ds_dir / "test.txt").read_text(encoding="utf-8").splitlines()
-        vocab = (ds_dir / "vocab.txt").read_text(encoding="utf-8").splitlines()
+        def _read(name):
+            with gzip.open(ds_dir / name, "rt", encoding="utf-8") as fr:
+                return fr.read().splitlines()
+        train = _read("train.txt.gz")
+        dev = _read("dev.txt.gz")
+        test = _read("test.txt.gz")
+        vocab = _read("vocab.txt.gz")
         assert len(train) == 20000, f"train: {len(train)}"
         assert len(dev) == 5000, f"dev: {len(dev)}"
         assert len(test) == 25000, f"test: {len(test)}"
         assert vocab[0] == "[PAD]"
         assert vocab[1] == "[UNK]"
-        # Format check: each line is label\ttext
         label, text = train[0].split("\t", maxsplit=1)
         assert label in ("0", "1")
         assert len(text) > 0
 
     def t_imdb_loader():
-        # Mimic chap6/8 notebook's load_imdb_data
+        # Mimic chap6/8 notebook's load_imdb_data (gzip-aware)
+        import gzip
         def load_imdb_data(path):
             sets = {}
             for split in ("train", "dev", "test"):
                 examples = []
-                with open(os.path.join(path, f"{split}.txt"), "r", encoding="utf-8") as fr:
+                with gzip.open(os.path.join(path, f"{split}.txt.gz"), "rt", encoding="utf-8") as fr:
                     for line in fr:
                         label, text = line.strip().split("\t", maxsplit=1)
                         examples.append((text, label))
@@ -62,49 +66,52 @@ def main():
         assert label in ("0", "1")
 
     def t_load_vocab():
-        # Mimic chap6/8 notebook's load_vocab → word2id dict
+        # Mimic chap6/8 notebook's load_vocab → word2id dict (gzip-aware)
+        import gzip
         def load_vocab(path):
+            opener = gzip.open if str(path).endswith(".gz") else open
             d = {}
-            with open(path, "r", encoding="utf-8") as fr:
+            with opener(path, "rt", encoding="utf-8") as fr:
                 for i, line in enumerate(fr):
                     d[line.strip()] = i
             return d
-        word2id = load_vocab(str(ROOT / "dataset" / "imdb" / "vocab.txt"))
+        word2id = load_vocab(str(ROOT / "dataset" / "imdb" / "vocab.txt.gz"))
         assert "[PAD]" in word2id and word2id["[PAD]"] == 0
         assert "[UNK]" in word2id and word2id["[UNK]"] == 1
-        # Some common words should be in the top of vocab
         for w in ("the", "movie", "is"):
             assert w in word2id, f"common word '{w}' missing from vocab"
 
     def t_lcqmc():
+        import gzip
         ld = ROOT / "dataset" / "lcqmc"
-        train = (ld / "train.txt").read_text(encoding="utf-8").splitlines()
+        with gzip.open(ld / "train.txt.gz", "rt", encoding="utf-8") as fr:
+            train = fr.read().splitlines()
         assert len(train) > 200000, f"train: {len(train)}"
-        # format: text_a\ttext_b\tlabel
         parts = train[0].split("\t")
         assert len(parts) == 3
         assert parts[2] in ("0", "1")
 
     def t_imdb_dataset_paddle():
         # Build a paddle.io.Dataset from the IMDB data and check forward pass
+        import gzip
         import paddle
         from paddle.io import Dataset, DataLoader
 
         def load_vocab(path):
             d = {}
-            with open(path, "r", encoding="utf-8") as fr:
+            with gzip.open(path, "rt", encoding="utf-8") as fr:
                 for i, line in enumerate(fr):
                     d[line.strip()] = i
             return d
 
         ds_dir = ROOT / "dataset" / "imdb"
-        word2id = load_vocab(str(ds_dir / "vocab.txt"))
+        word2id = load_vocab(str(ds_dir / "vocab.txt.gz"))
 
         class IMDBDataset(Dataset):
             def __init__(self, path, word2id, n=64):
                 super().__init__()
                 self.examples = []
-                with open(path, "r", encoding="utf-8") as fr:
+                with gzip.open(path, "rt", encoding="utf-8") as fr:
                     for i, line in enumerate(fr):
                         if i >= n:
                             break
@@ -117,7 +124,7 @@ def main():
                 ids, label = self.examples[i]
                 return paddle.to_tensor(ids, dtype='int64'), label
 
-        ds = IMDBDataset(str(ds_dir / "train.txt"), word2id, n=64)
+        ds = IMDBDataset(str(ds_dir / "train.txt.gz"), word2id, n=64)
         loader = DataLoader(ds, batch_size=8)
         for batch_x, batch_y in loader:
             assert batch_x.shape == [8, 64]

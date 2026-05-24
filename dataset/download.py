@@ -16,6 +16,7 @@ Iris 通过 `sklearn.datasets.load_iris()` 直接取，无需下载。
   python dataset/download.py --only=boston,lcqmc   # 只下载指定数据集
 """
 import argparse
+import gzip
 import os
 import random
 import re
@@ -87,14 +88,16 @@ def fetch_cifar10():
     CIFAR_DIR.mkdir(parents=True, exist_ok=True)
     with tarfile.open(tar_path, "r:gz") as tf:
         tf.extractall(CIFAR_DIR)
+    # remove the tarball; pickled batches under cifar-10-batches-py/ are the consumed data
+    tar_path.unlink(missing_ok=True)
     log("CIFAR-10 ready")
 
 
 # ----------------- IMDB -----------------
 def fetch_imdb():
     # Already processed?
-    if (IMDB_DIR / "train.txt").exists():
-        log(f"skip (exists): {(IMDB_DIR / 'train.txt').relative_to(ROOT)}")
+    if (IMDB_DIR / "train.txt.gz").exists():
+        log(f"skip (exists): {(IMDB_DIR / 'train.txt.gz').relative_to(ROOT)}")
         return
 
     tar_path = DATASET_ROOT / "aclImdb_v1.tar.gz"
@@ -133,8 +136,9 @@ def fetch_imdb():
     train_items = train_all[dev_size:]
 
     def write_split(items, path):
+        # gzip-compressed text file
         path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("w", encoding="utf-8") as fw:
+        with gzip.open(path, "wt", encoding="utf-8") as fw:
             for label, text in items:
                 fw.write(f"{label}\t{text}\n")
 
@@ -144,26 +148,27 @@ def fetch_imdb():
         counter.update(text.split(" "))
     vocab_tokens = ["[PAD]", "[UNK]"] + [w for w, _ in counter.most_common(50000) if w]
 
-    write_split(train_items, IMDB_DIR / "train.txt")
-    write_split(dev_items, IMDB_DIR / "dev.txt")
-    write_split(test_items, IMDB_DIR / "test.txt")
-    vocab_path = IMDB_DIR / "vocab.txt"
+    write_split(train_items, IMDB_DIR / "train.txt.gz")
+    write_split(dev_items, IMDB_DIR / "dev.txt.gz")
+    write_split(test_items, IMDB_DIR / "test.txt.gz")
+    vocab_path = IMDB_DIR / "vocab.txt.gz"
     vocab_path.parent.mkdir(parents=True, exist_ok=True)
-    with vocab_path.open("w", encoding="utf-8") as fw:
+    with gzip.open(vocab_path, "wt", encoding="utf-8") as fw:
         for tok in vocab_tokens:
             fw.write(tok + "\n")
-    log(f"  written: {IMDB_DIR.relative_to(ROOT)} (train/dev/test/vocab)")
+    log(f"  written: {IMDB_DIR.relative_to(ROOT)} (*.txt.gz)")
 
-    # Clean up extracted folder to save disk; keep tar in case user wants to re-process
-    log("cleaning up extracted aclImdb (keeping the tar.gz)...")
+    # Clean up extracted folder and tarball to save disk
+    log("cleaning up extracted aclImdb and aclImdb_v1.tar.gz...")
     shutil.rmtree(extract_dir, ignore_errors=True)
+    tar_path.unlink(missing_ok=True)
     log("IMDB ready")
 
 
 # ----------------- LCQMC -----------------
 def fetch_lcqmc():
     target_dir = LCQMC_DIR
-    train_path = target_dir / "train.txt"
+    train_path = target_dir / "train.txt.gz"
     if train_path.exists():
         log(f"skip (exists): {train_path.relative_to(ROOT)}")
         return
@@ -189,7 +194,8 @@ def fetch_lcqmc():
     target_dir.mkdir(parents=True, exist_ok=True)
 
     def copy_normalize(src: Path, dst: Path):
-        with src.open("r", encoding="utf-8") as fr, dst.open("w", encoding="utf-8") as fw:
+        # write gzip-compressed
+        with src.open("r", encoding="utf-8") as fr, gzip.open(dst, "wt", encoding="utf-8") as fw:
             for i, line in enumerate(fr):
                 # paddle hub format: text_a\ttext_b\tlabel  (with possible header on line 0)
                 parts = line.rstrip("\n").split("\t")
@@ -204,10 +210,11 @@ def fetch_lcqmc():
         if not src.exists():
             log(f"  warning: {split} file not found in {src_dir}")
             continue
-        copy_normalize(src, target_dir / f"{split}.txt")
-        log(f"  written: {(target_dir / f'{split}.txt').relative_to(ROOT)}")
+        copy_normalize(src, target_dir / f"{split}.txt.gz")
+        log(f"  written: {(target_dir / f'{split}.txt.gz').relative_to(ROOT)}")
 
     shutil.rmtree(extract_dir, ignore_errors=True)
+    tar_path.unlink(missing_ok=True)
     log("LCQMC ready")
 
 
