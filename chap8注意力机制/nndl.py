@@ -73,7 +73,7 @@ class Accuracy(Metric):
 
         # 获取本批数据中预测正确的样本个数
         labels = paddle.squeeze(labels, axis=-1)
-        batch_correct = paddle.sum(paddle.cast(preds==labels, dtype="float32")).numpy()[0]
+        batch_correct = paddle.sum(paddle.cast(preds==paddle.cast(labels, dtype=preds.dtype), dtype="float32")).item()
         batch_count = len(labels)
 
         # 更新num_correct 和 num_count

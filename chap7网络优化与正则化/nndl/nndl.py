@@ -53,7 +53,7 @@ def accuracy(preds, labels):
     else: 
         #多分类时，使用'paddle.argmax'计算最大元素索引作为类别 
         preds = paddle.argmax(preds, axis=1, dtype='int32')
-    return paddle.mean(paddle.cast(paddle.equal(preds, labels), dtype='float32'))
+    return paddle.mean(paddle.cast(paddle.equal(preds, paddle.cast(labels, dtype=preds.dtype)), dtype='float32'))
 
 class RunnerV3(object):
     def __init__(self, model, optimizer, loss_fn, metric, **kwargs):
@@ -244,7 +244,7 @@ class Accuracy(Metric):
 
         # 获取本批数据中预测正确的样本个数
         labels = paddle.squeeze(labels, axis=-1)
-        batch_correct = paddle.sum(paddle.cast(preds==labels, dtype="float32")).numpy()[0]
+        batch_correct = paddle.sum(paddle.cast(preds==paddle.cast(labels, dtype=preds.dtype), dtype="float32")).item()
         batch_count = len(labels)
 
         # 更新num_correct 和 num_count

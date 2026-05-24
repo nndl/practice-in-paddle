@@ -17,4 +17,4 @@ def accuracy(preds, labels):
     else:
         #多分类时，使用'paddle.argmax'计算最大元素索引作为类别
         preds = paddle.argmax(preds,axis=1, dtype='int32')
-    return paddle.mean(paddle.cast(paddle.equal(preds, labels),dtype='float32'))
+    return paddle.mean(paddle.cast(paddle.equal(preds, paddle.cast(labels, dtype=preds.dtype)),dtype='float32'))

@@ -1,0 +1,19 @@
+# virtual environments
+.venv*/
+venv*/
+
+# Python bytecode caches
+__pycache__/
+*.pyc
+*.pyo
+
+# saved model checkpoints written by tests/notebooks
+_tmp_*.pdparams
+*.pdparams
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
