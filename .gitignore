@@ -29,3 +29,4 @@ dataset/boston_house_prices.csv
 dataset/cifar-10-batches-py/
 dataset/imdb/
 dataset/lcqmc/
+dataset/bert-base-chinese/

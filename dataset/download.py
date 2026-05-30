@@ -7,6 +7,7 @@
   dataset/cifar-10-batches-py/         — chap5
   dataset/imdb/{train,dev,test,vocab}.txt  — chap6 / chap8（共享）
   dataset/lcqmc/{train,dev,test}.txt   — chap8
+  dataset/bert-base-chinese/vocab.txt  — chap8（LCQMC Transformer 精确复刻，可选）
 
 MNIST 不在此处下载——`paddle.vision.datasets.MNIST(download=True)` 会自动下载。
 Iris 通过 `sklearn.datasets.load_iris()` 直接取，无需下载。
@@ -38,6 +39,8 @@ SOURCES = {
     "cifar10": "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz",
     "imdb": "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
     "lcqmc": "https://bj.bcebos.com/paddlehub-dataset/lcqmc.tar.gz",
+    # BERT 中文 vocab.txt（21128）——chap8 LCQMC Transformer 精确复刻用；ModelScope 国内可达
+    "bert_vocab": "https://modelscope.cn/api/v1/models/tiansz/bert-base-chinese/repo?Revision=master&FilePath=vocab.txt",
 }
 
 
@@ -218,12 +221,33 @@ def fetch_lcqmc():
     log("LCQMC ready")
 
 
+# ----------------- BERT 中文 vocab.txt（LCQMC Transformer 精确复刻，可选）-----------------
+def fetch_bert_vocab():
+    """下载 bert-base-chinese vocab.txt 供 chap8 LCQMC Transformer 精确复刻。
+    非致命：缺它时 rerun_lcqmc_transformer.py 会自动退回字符级词表。"""
+    dest = DATASET_ROOT / "bert-base-chinese" / "vocab.txt"
+    if dest.exists():
+        log(f"skip (exists): {dest.relative_to(ROOT)}")
+        return
+    try:
+        _download(SOURCES["bert_vocab"], dest)
+        lines = dest.read_text(encoding="utf-8").splitlines()
+        if len(lines) < 21000 or "[CLS]" not in lines:
+            raise RuntimeError(f"校验失败（lines={len(lines)}）")
+        log(f"BERT 中文 vocab.txt ready ({len(lines)} 行)")
+    except Exception as e:
+        dest.unlink(missing_ok=True)
+        log(f"  warning: bert_vocab 获取失败（{type(e).__name__}: {e}）—— "
+            f"可手动放到 {dest.relative_to(ROOT)}；缺它 LCQMC 脚本退回字符级词表")
+
+
 # ----------------- main -----------------
 FETCHERS = {
     "boston": fetch_boston,
     "cifar10": fetch_cifar10,
     "imdb": fetch_imdb,
     "lcqmc": fetch_lcqmc,
+    "bert_vocab": fetch_bert_vocab,
 }
 
 

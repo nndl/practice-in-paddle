@@ -17,6 +17,7 @@ python dataset/download.py --only=boston,lcqmc  # 只下载指定子集
 | CIFAR-10 | cs.toronto.edu | 163 MB tar | chap5 |
 | IMDB (aclImdb_v1) | ai.stanford.edu | 80 MB tar，处理后 ~80MB | chap6, chap8 |
 | LCQMC | bj.bcebos.com/paddlehub-dataset | 6 MB tar | chap8 |
+| BERT 中文 vocab.txt | ModelScope（国内可达）| 110 KB | chap8 LCQMC Transformer 精确复刻（可选）|
 | MNIST | `paddle.vision.datasets.MNIST(download=True)` 自动下载 | 11 MB | chap5, chap7 |
 | Iris | `sklearn.datasets.load_iris()` 内置 | — | chap3, chap4 |
 
@@ -35,6 +36,8 @@ dataset/
     train.txt.gz                 # 238766 条
     dev.txt.gz                   # 8802 条
     test.txt.gz                  # 12500 条
+  bert-base-chinese/             # chap8 LCQMC Transformer 精确复刻（可选）
+    vocab.txt                    # bert-base-chinese 字表（21128）
   download.py
   README.md
 ```
